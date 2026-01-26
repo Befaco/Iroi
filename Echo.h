@@ -42,6 +42,8 @@ private:
     bool externalClock_;
     bool infinite_;
 
+    int clockSamples_;
+
     void SetTapTime(int idx, float time)
     {
         newTapsTimes_[idx] = Clamp(time, kEchoMinLengthSamples * kEchoTapsRatios[idx], (kEchoMaxLengthSamples - 1) * kEchoTapsRatios[idx]);
@@ -85,10 +87,14 @@ private:
         if (ClockSource::CLOCK_SOURCE_EXTERNAL == patchState_->clockSource)
         {
             int newIndex = densityQuantizer_.Process(value);
-            if (newIndex == clockRatiosIndex_ && externalClock_)
+            if (newIndex == clockRatiosIndex_ && clockSamples_ == patchState_->clockSamples && externalClock_)
             {
+                // Return if nothing chaged.
                 return;
             }
+
+            clockSamples_ = patchState_->clockSamples;
+            
             clockRatiosIndex_ = newIndex;
 
             float d = kModClockRatios[clockRatiosIndex_] * patchState_->clockSamples * kEchoExternalClockMultiplier;
@@ -162,7 +168,7 @@ public:
             ef_[i] = EnvFollower::create();
         }
 
-        densityQuantizer_.Init(kClockUnityRatioIndex, 0.15f, false);
+        densityQuantizer_.Init(kClockUnityRatioIndex + 1, 0.15f, false);
     }
     ~Echo()
     {

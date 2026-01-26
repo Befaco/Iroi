@@ -84,7 +84,7 @@ public:
 
     inline void SetValue(float value)
     {
-        *param_ = value;
+        //*param_ = value;
     }
 
     // Called at block rate

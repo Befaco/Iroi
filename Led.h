@@ -7,12 +7,12 @@ static const int BLINK_LIMIT = 75; // 50ms (1500 = 1s)
 
 enum LedName
 {
-    LED_INPUT,
-    LED_INPUT_PEAK,
-    LED_SYNC,
-    LED_MOD,
     LED_RANDOM,
     LED_MAP,
+    LED_INPUT_PEAK,
+    LED_SYNC,
+    LED_INPUT,
+    LED_MOD,
     LED_SHIFT,
     LED_LAST
 };

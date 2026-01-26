@@ -80,7 +80,7 @@ public:
             patchState_->clockReset = true;
         }
 
-        size_t s = patchState_->tempo->getPeriodInSamples();
+        int s = patchState_->tempo->getPeriodInSamples();
         if (fabs(patchState_->clockSamples - s) > kClockTempoSamplesMin)
         {
             patchState_->clockSamples = s;

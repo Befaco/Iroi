@@ -234,7 +234,7 @@ private:
     {
         filterGain_ = kFilterLpGainMin;
 
-        float cutoff = Clamp(M2F(note), 10.f, 20000.f);
+        float cutoff = Clamp(M2F(note), 18.f, 20000.f);
 
         switch (mode_)
         {
@@ -244,23 +244,24 @@ private:
                 filters_[RIGHT_CHANNEL]->setLowPass(cutoff, reso_);
                 // Shut the filter off when the frequency is really low.
                 float g = MapExpo(resoValue_, 0.f, 0.97f, kFilterLpGainMax, kFilterLpGainMin);
-                filterGain_ = cutoff <= 15.f ? Map(cutoff, 10.f, 15.f, 0.f, g) : g;
+                filterGain_ = cutoff <= 20.f ? Map(cutoff, 18.f, 20.f, 0.f, g) : g;
                 break;
             }
         case FilterMode::BP:
             {
                 filters_[LEFT_CHANNEL]->setBandPass(cutoff, reso_);
                 filters_[RIGHT_CHANNEL]->setBandPass(cutoff, reso_);
-                filterGain_ = MapExpo(resoValue_, 0.f, 0.97f, kFilterBpGainMin, kFilterBpGainMax);
+                filterGain_ = MapLog(resoValue_, 0.f, 0.97f, kFilterBpGainMin, kFilterBpGainMax);
             }
             break;
         case FilterMode::HP:
             {
+                cutoff = Clamp(M2F(note), 18.f, 12000.f);
                 filters_[LEFT_CHANNEL]->setHighPass(cutoff, reso_);
                 filters_[RIGHT_CHANNEL]->setHighPass(cutoff, reso_);
                 // Shut the filter off when the frequency is really high.
                 float g = MapExpo(resoValue_, 0.f, 0.97f, kFilterHpGainMax, kFilterHpGainMin);
-                filterGain_ = cutoff >= 20000.f ? Map(cutoff, 15000, 20000, g, 0.f) : g;
+                filterGain_ = cutoff >= 10000.f ? Map(cutoff, 10000, 12000, g, 0.f) : g;
                 break;
             }
         case FilterMode::CF:
@@ -269,7 +270,7 @@ private:
             combs_[LEFT_CHANNEL]->SetResonance(r);
             combs_[RIGHT_CHANNEL]->SetNote(note);
             combs_[RIGHT_CHANNEL]->SetResonance(r);
-            //filterGain_ = MapExpo(resoValue_, 0.f, 1.f, kFilterCombGainMax, kFilterCombGainMin);
+            filterGain_ = MapExpo(resoValue_, 0.f, 0.97f, kFilterCombGainMax, kFilterCombGainMin);
             break;
         }
         noise_.SetFreq(cutoff);
@@ -370,15 +371,15 @@ public:
             float lo = lf, ro = rf;
             if (FilterMode::CF == mode_)
             {
-                lo = HardClip(combs_[LEFT_CHANNEL]->Process(lf) * filterGain_);
-                ro = HardClip(combs_[RIGHT_CHANNEL]->Process(rf) * filterGain_);
+                lo = SoftClip(combs_[LEFT_CHANNEL]->Process(lf) * filterGain_);
+                ro = SoftClip(combs_[RIGHT_CHANNEL]->Process(rf) * filterGain_);
                 lo = dc_[LEFT_CHANNEL]->process(lo);
                 ro = dc_[RIGHT_CHANNEL]->process(ro);
             }
             else
             {
-                lo = filters_[LEFT_CHANNEL]->process(lf) * filterGain_;
-                ro = filters_[RIGHT_CHANNEL]->process(rf) * filterGain_;
+                lo = SoftClip(filters_[LEFT_CHANNEL]->process(lf) * filterGain_);
+                ro = SoftClip(filters_[RIGHT_CHANNEL]->process(rf) * filterGain_);
                 lo *= 1.f - ef_[LEFT_CHANNEL]->process(lo);
                 ro *= 1.f - ef_[RIGHT_CHANNEL]->process(ro);
             }

@@ -72,10 +72,10 @@ constexpr int kExternalClockLimit = 3000; // Samples required to detect a steady
 constexpr float kInternalClockSamples = 48000.f; // 1 second
 static const float kInternalClockFreq = 48000.f / kInternalClockSamples;
 constexpr int kClockNofRatios = 17;
-constexpr int kClockUnityRatioIndex = 9;
+constexpr int kClockUnityRatioIndex = 8;
 static const float kModClockRatios[kClockNofRatios] = { 0.015625f, 0.03125f, 0.0625f, 0.125f, 0.2f, 0.25f, 0.33f, 0.5f, 1, 2, 3, 4, 5, 8, 16, 32, 64};
 static const float kRModClockRatios[kClockNofRatios] = { 64, 32, 16, 8, 5, 4, 3, 2, 1, 0.5f, 0.33f, 0.25f, 0.2f, 0.125f, 0.0625f, 0.03125f, 0.015625f};
-constexpr float kClockTempoSamplesMin = 48; // Minimum number of samples required to detect a change
+constexpr int kClockTempoSamplesMin = 48; // Minimum number of samples required to detect a change
 
 constexpr float kInputGain = 0.2f;
 
@@ -91,10 +91,10 @@ constexpr float kFilterLpGainMin = 0.3f;
 constexpr float kFilterLpGainMax = 0.4f;
 constexpr float kFilterHpGainMin = 0.2f;
 constexpr float kFilterHpGainMax = 0.4f;
-constexpr float kFilterBpGainMin = 0.2f;
-constexpr float kFilterBpGainMax = 0.4f;
-constexpr float kFilterCombGainMin = 0.1f;
-constexpr float kFilterCombGainMax = 0.2f;
+constexpr float kFilterBpGainMin = 1.4f;
+constexpr float kFilterBpGainMax = 0.2f;
+constexpr float kFilterCombGainMin = 0.3f;
+constexpr float kFilterCombGainMax = 0.3f;
 
 constexpr float kResoGainMin = 0.5f;
 constexpr float kResoGainMax = 1.2f;
@@ -107,10 +107,10 @@ constexpr int32_t kEchoFadeSamples = 2400; // 50 ms @ audio rate
 constexpr int32_t kEchoMinLengthSamples = 480; // 10 ms @ audio rate
 constexpr int32_t kEchoMaxLengthSamples = 288000; // 6 seconds @ audio rate
 constexpr int kEchoTaps = 4;
-const float kEchoTapsRatios[kEchoTaps] = { 0.75f, 0.25f, 0.375f, 1.f };  // TAP_LEFT_A (1/2 dot), TAP_LEFT_B (1/8), TAP_RIGHT_A (1/8 dot), TAP_RIGHT_B (1)
+const float kEchoTapsRatios[kEchoTaps] = { 0.75f, 0.375f, 0.5f, 0.875f };  // TAP_LEFT_A, TAP_LEFT_B, TAP_RIGHT_A, TAP_RIGHT_B. Smaller = earlier
 const float kEchoTapsFeedbacks[kEchoTaps] = { 0.345f, 0.645f, 0.545f, 0.445f };
 const int32_t kEchoMaxExternalClockSamples = kEchoMaxLengthSamples / kModClockRatios[kClockNofRatios - 1]; // Maximum period for the external clock
-constexpr int kEchoExternalClockMultiplier = 32;
+constexpr int kEchoExternalClockMultiplier = 375;
 constexpr float kEchoInfiniteFeedbackThreshold = 0.985f;
 constexpr float kEchoInfiniteFeedbackLevel = 1.2f;
 constexpr float kEchoCompThresMin = -16.f;
@@ -118,12 +118,12 @@ constexpr float kEchoCompThresMax = -24.f;
 constexpr float kEchoMakeupGain = 1.8f;
 
 constexpr int32_t kAmbienceBufferSize = 48000;
-constexpr int kAmbienceNofDiffusers = 7;
+constexpr int kAmbienceNofDiffusers = 6;
 constexpr float kAmbienceLowDampMin = -0.5f;
 constexpr float kAmbienceLowDampMax = -40.f;
 constexpr float kAmbienceHighDampMin = -0.5f;
 constexpr float kAmbienceHighDampMax = -40.f;
-constexpr float kAmbienceMakeupGain = 2.f;
+constexpr float kAmbienceMakeupGain = 4.f;
 constexpr float kAmbienceInfiniteFeedbackThreshold = 0.97f;
 constexpr float kAmbienceInfiniteFeedbackLevel = 1.1f;
 
@@ -241,7 +241,7 @@ struct PatchState
     bool syncIn;
     bool clockReset;
     bool clockTick;
-    size_t clockSamples;
+    int clockSamples;
 
     bool modTypeLockFlag;
     bool modSpeedLockFlag;

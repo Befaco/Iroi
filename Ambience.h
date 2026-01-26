@@ -147,9 +147,6 @@ public:
     {
         time_ = time;
         rt_ = Db2A((delayTimes_[kAmbienceNofDiffusers - 1] / M2D(time)) * -60.f);
-        if (rt_ >= kOne) {
-            rt_ = 1.f;
-        }
     }
 
     void SetDf(float _df)
@@ -182,9 +179,9 @@ public:
 
         for (int i = 0; i < kAmbienceNofDiffusers - 1; i++)
         {
-            float prev = HardClip(out - outs_[i] * df_);
+            float prev = SoftClip(out - outs_[i] * df_);
             diffuse_[i]->write(prev);
-            out = HardClip(prev * df_ + outs_[i]);
+            out = SoftClip(prev * df_ + outs_[i]);
             outs_[i] = diffuse_[i]->read(delayTimes_[i], newDelayTimes_[i], x);
         }
 
@@ -313,7 +310,7 @@ private:
     float reverse_;
     float xi_;
 
-    Lut<float, 32> decayLUT{0.f, -160.f, Lut<float, 32>::Type::LUT_TYPE_EXPO};
+    Lut<float, 32> decayLUT{0.f, -200.f, Lut<float, 32>::Type::LUT_TYPE_EXPO};
 
     /**
      * @param damp Attenuation in Db
@@ -361,6 +358,10 @@ private:
     void SetDecay(float value)
     {
         decay_ = value;
+        if (decay_ >= kOne)
+        {
+            decay_ = 1.f;
+        }
         SetDecayTime(decayLUT.Quantized(decay_));
     }
 

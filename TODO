@@ -1,0 +1,15 @@
+- El sync va muy rapido con respecto al delay
+ok
+- Arreglar lo de los LEDS
+ok(?)
+- Decay infinito en la reverb?
+nope :(
+- Quitar el slew del random?
+al darle rápido al botón y con el input no hay slew, la randomización no puede ser más rápida...
+- Hacer shift siempre momentary. Es confuso como esta ahora combinado con undo y clear
+lo possiamo fare però complicato tornare indietro
+- meter los CCs para testing?
+ok
+- Los volúmenes meten "zapping noise"
+ok
+- Si das a MAP y SHIFT se quedan los dos

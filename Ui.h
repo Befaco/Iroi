@@ -227,7 +227,7 @@ public:
         leds_[LED_SHIFT] = Led::create(SHIFT_BUTTON);
 
         midiOuts_[PARAM_MIDI_FILTER_CUTOFF] = MidiController::create(
-            &patchCtrls_->filterCutoff, ParamMidi::PARAM_MIDI_FILTER_CUTOFF);
+            &cutoff_, ParamMidi::PARAM_MIDI_FILTER_CUTOFF);
         midiOuts_[PARAM_MIDI_FILTER_RESONANCE] = MidiController::create(
             &patchCtrls_->filterResonance, ParamMidi::PARAM_MIDI_FILTER_RESONANCE);
         midiOuts_[PARAM_MIDI_FILTER_MODE] = MidiController::create(
@@ -556,7 +556,7 @@ public:
 
         if (msg.isControlChange()) {
             if (msg.getControllerNumber() < PARAM_MIDI_LAST) {
-                // midiOuts_[msg.getControllerNumber()]->SetValue(msg.getControllerValue() / 127.0f);
+                midiOuts_[msg.getControllerNumber()]->SetValue(msg.getControllerValue() / 127.0f);
             }
         }
         /*
@@ -842,10 +842,10 @@ public:
         }
 
         cutoffNote = Modulate(cutoff_, patchCtrls_->filterCutoffModAmount, patchState_->modValue, 0, 0, -1.f, 1.f, patchState_->modAttenuverters);
-        cutoffNote = 12 + 115 * cutoffNote;
+        cutoffNote = 12 + 127 * cutoffNote;
         cutoffPot_ += 0.1f * (cutoffNote - cutoffPot_);
-        patchCtrls_->filterCutoff = Clamp(cutoffPot_ + cutoffCv_, 0.f, 127.f);
-
+        patchCtrls_->filterCutoff = cutoffPot_ + cutoffCv_;
+        
         if (patchCtrls_->filterVol >= kOne) {
             patchCtrls_->filterVol = 1.f;
         }

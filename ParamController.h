@@ -693,7 +693,7 @@ public:
     static FaderController* create(
         PatchState* patchState,
         float* param,
-        float lpCoeff = 0.f,
+        float lpCoeff = 0.3f,
         float movementDelta = 0.f,
         float scale = 1.f
     ) {
