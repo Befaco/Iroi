@@ -1390,10 +1390,10 @@ public:
     {
         pressed_ = pressed;
 
-        // Act only when the led button is pressed.
+        Set(pressed_);
+
         if (pressed_)
         {
-            Set(!on_);
             samplesSincePressed_ = 0;
             samplesSinceHeld_ = 0;
         }
