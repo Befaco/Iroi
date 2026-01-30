@@ -265,7 +265,7 @@ public:
         }
 
         float v = *value_ + r1 * amount * s;
-        SetValue(Wrap(v), true);
+        SetValue(Wrap(v), patchState_->randomHasSlew);
     }
 
     inline void Realign()
@@ -492,7 +492,7 @@ public:
             lockableParams_[i].Lock();
         }
         lockableParams_[name].Randomize(lockableParams_[PARAM_LOCKABLE_RND].GetValue());
-        lockableParams_[selectedParam_].Unlock(true);
+        lockableParams_[selectedParam_].Unlock(patchState_->randomHasSlew);
     }
 
     inline void Reset(FuncMode funcMode)
