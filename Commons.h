@@ -188,7 +188,9 @@ struct PatchCtrls
     float ambienceAutoPan;
 
     float modLevel;
+    float modLevelRndAmount;
     float modSpeed;
+    float modSpeedRndAmount;
     float modType;
 
     float mapTarget;

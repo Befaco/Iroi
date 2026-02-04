@@ -194,20 +194,22 @@ public:
             &patchCtrls_->ambienceDecayCvAmount,
             &patchCtrls_->ambienceDecayRndAmount);
 
-        knobs_[PARAM_KNOB_MOD_LEVEL] =
-            KnobController::create(patchState_, &patchCtrls_->modLevel);
-        knobs_[PARAM_KNOB_MOD_SPEED] = KnobController::create(
-            patchState_, &patchCtrls_->modSpeed, &patchCtrls_->modType);
+        knobs_[PARAM_KNOB_MOD_LEVEL] = KnobController::create(patchState_, 
+            &patchCtrls_->modLevel, NULL,
+            NULL, NULL, &patchCtrls_->modLevelRndAmount);
+        knobs_[PARAM_KNOB_MOD_SPEED] = KnobController::create(patchState_, 
+            &patchCtrls_->modSpeed, &patchCtrls_->modType,
+            NULL, NULL, &patchCtrls_->modSpeedRndAmount);
 
         switches_[PARAM_SWITCH_MAP_SELECTOR] =
             SwitchController::create(&patchCtrls_->mapTarget);
 
         cvs_[PARAM_CV_FILTER_CUTOFF] = CvController::create(
-            &patchCvs_->filterCutoff, kCvLpCoeff, kCvOffset, kCvMult, 0.f);
+            &patchCvs_->filterCutoff, kCvLpCoeff, kCvOffset, kCvMult);
         cvs_[PARAM_CV_FILTER_RESONANCE] =
             CvController::create(&patchCvs_->filterResonance);
         cvs_[PARAM_CV_RESONATOR_TUNE] = CvController::create(
-            &patchCvs_->resonatorTune, kCvLpCoeff, kCvOffset, kCvMult, 0.f);
+            &patchCvs_->resonatorTune, kCvLpCoeff, kCvOffset, kCvMult);
         cvs_[PARAM_CV_RESONATOR_FEEDBACK] =
             CvController::create(&patchCvs_->resonatorFeedback);
         cvs_[PARAM_CV_ECHO_DENSITY] =
@@ -401,6 +403,8 @@ public:
             knobs_[PARAM_KNOB_FILTER_RESONANCE]->SetValue(cfg[5] / 8192.f, LockableParamName::PARAM_LOCKABLE_RND); // Filter resonance random amount
             knobs_[PARAM_KNOB_RESONATOR_FEEDBACK]->SetValue(cfg[6] / 8192.f, LockableParamName::PARAM_LOCKABLE_RND); // Resonator feedback random amount
             knobs_[PARAM_KNOB_RESONATOR_TUNE]->SetValue(cfg[7] / 8192.f, LockableParamName::PARAM_LOCKABLE_RND); // Resonator tune random amount
+            knobs_[PARAM_KNOB_MOD_LEVEL]->SetValue(cfg[8] / 8192.f, LockableParamName::PARAM_LOCKABLE_RND); // Modulation level random amount
+            knobs_[PARAM_KNOB_MOD_SPEED]->SetValue(cfg[9] / 8192.f, LockableParamName::PARAM_LOCKABLE_RND); // Modulation speed random amount
         }
         Resource::destroy(resource);
     }
@@ -474,6 +478,8 @@ public:
             values[5] = patchCtrls_->filterResonanceRndAmount;
             values[6] = patchCtrls_->resonatorFeedbackRndAmount;
             values[7] = patchCtrls_->resonatorTuneRndAmount;
+            values[8] = patchCtrls_->modLevelRndAmount;
+            values[9] = patchCtrls_->modSpeedRndAmount;
             break;
 
         default:
@@ -775,6 +781,9 @@ public:
 
         knobs_[PARAM_KNOB_AMBIENCE_DECAY]->Randomize();
         knobs_[PARAM_KNOB_AMBIENCE_SPACETIME]->Randomize();
+
+        knobs_[PARAM_KNOB_MOD_LEVEL]->Randomize();
+        knobs_[PARAM_KNOB_MOD_SPEED]->Randomize();
 
         randomize_ = false;
     }

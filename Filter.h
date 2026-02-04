@@ -244,7 +244,7 @@ private:
                 filters_[RIGHT_CHANNEL]->setLowPass(cutoff, reso_);
                 // Shut the filter off when the frequency is really low.
                 float g = MapExpo(resoValue_, 0.f, 0.97f, kFilterLpGainMax, kFilterLpGainMin);
-                filterGain_ = cutoff <= 20.f ? Map(cutoff, 18.f, 20.f, 0.f, g) : g;
+                filterGain_ = cutoff <= 20.f ? Map(cutoff, 19.f, 20.f, 0.f, g) : g;
                 break;
             }
         case FilterMode::BP:
@@ -352,6 +352,7 @@ public:
         SetReso(r);
 
         ParameterInterpolator cutoffParam = ParameterInterpolator(&cutoff_, patchCtrls_->filterCutoff, size);
+        ParameterInterpolator volParam = ParameterInterpolator(&dryWet_, patchCtrls_->filterVol, size);
 
         for (size_t i = 0; i < size; i++)
         {
@@ -384,8 +385,10 @@ public:
                 ro *= 1.f - ef_[RIGHT_CHANNEL]->process(ro);
             }
 
-            leftOut[i] = SoftClip(lo * kFilterMakeupGain * patchCtrls_->filterVol);
-            rightOut[i] = SoftClip(ro * kFilterMakeupGain * patchCtrls_->filterVol);
+            float v = volParam.Next();
+
+            leftOut[i] = SoftClip(lo * kFilterMakeupGain * v);
+            rightOut[i] = SoftClip(ro * kFilterMakeupGain * v);
         }
     }
 };

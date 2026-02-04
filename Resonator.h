@@ -355,6 +355,8 @@ public:
         float f = Modulate(patchCtrls_->resonatorFeedback, patchCtrls_->resonatorFeedbackModAmount, patchState_->modValue, patchCtrls_->resonatorFeedbackCvAmount, patchCvs_->resonatorFeedback, -1.f, 1.f, patchState_->modAttenuverters, patchState_->cvAttenuverters);
         SetFeedback(f);
 
+        ParameterInterpolator volParam = ParameterInterpolator(&dryWet_, patchCtrls_->resonatorVol, size);
+
         for (size_t i = 0; i < size; i++)
         {
             SetTune(tuningParam.Next());
@@ -386,8 +388,10 @@ public:
             oLeft = hs_[LEFT_CHANNEL]->process(oLeft);
             oRight = hs_[RIGHT_CHANNEL]->process(oRight);
 
-            leftOut[i] = CheapEqualPowerCrossFade(lIn, oLeft * kResoMakeupGain, patchCtrls_->resonatorVol);
-            rightOut[i] = CheapEqualPowerCrossFade(rIn, oRight * kResoMakeupGain, patchCtrls_->resonatorVol);
+            float v = volParam.Next();
+
+            leftOut[i] = CheapEqualPowerCrossFade(lIn, oLeft * kResoMakeupGain, v);
+            rightOut[i] = CheapEqualPowerCrossFade(rIn, oRight * kResoMakeupGain, v);
         }
 
         compressor_->process(output, output);

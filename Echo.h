@@ -36,7 +36,7 @@ private:
 
     float levels_[kEchoTaps], outs_[kEchoTaps];
     float tapsTimes_[kEchoTaps], newTapsTimes_[kEchoTaps], maxTapsTimes_[kEchoTaps];
-    float repeats_, filterValue_;
+    float repeats_, filterValue_, dryWet_;
     float xi_;
 
     bool externalClock_;
@@ -215,6 +215,8 @@ public:
 
         float x = 0;
 
+        ParameterInterpolator volParam = ParameterInterpolator(&dryWet_, patchCtrls_->echoVol, size);
+
         for (int i = 0; i < size; i++)
         {
             // Using crossfade between two different tap times when the clock is
@@ -269,8 +271,10 @@ public:
             left = comp_[LEFT_CHANNEL]->process(left) * kEchoMakeupGain;
             right = comp_[RIGHT_CHANNEL]->process(right) * kEchoMakeupGain;
 
-            leftOut[i] = CheapEqualPowerCrossFade(lIn, left, patchCtrls_->echoVol);
-            rightOut[i] = CheapEqualPowerCrossFade(rIn, right, patchCtrls_->echoVol);
+            float v = volParam.Next();
+
+            leftOut[i] = CheapEqualPowerCrossFade(lIn, left, v);
+            rightOut[i] = CheapEqualPowerCrossFade(rIn, right, v);
         }
 
         if (externalClock_)

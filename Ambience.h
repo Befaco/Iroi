@@ -306,7 +306,7 @@ private:
     Compressor* comp_[2];
     DcBlockingFilter* dc_[2];
 
-    float amp_, pan_, decay_, spaceTime_;
+    float amp_, pan_, decay_, spaceTime_, dryWet_;
     float reverse_;
     float xi_;
 
@@ -493,6 +493,8 @@ public:
         float r = 1.f - reverse_;
         float x = 0;
 
+        ParameterInterpolator volParam = ParameterInterpolator(&dryWet_, patchCtrls_->ambienceVol, size);
+
         for (size_t i = 0; i < size; i++)
         {
             float lIn = Clamp(leftIn[i], -3.f, 3.f);
@@ -526,8 +528,10 @@ public:
             left = comp_[LEFT_CHANNEL]->process(left * a) * kAmbienceMakeupGain;
             right = comp_[RIGHT_CHANNEL]->process(right * a) * kAmbienceMakeupGain;
 
-            leftOut[i] = CheapEqualPowerCrossFade(lIn, left, patchCtrls_->ambienceVol, 1.4f);
-            rightOut[i] = CheapEqualPowerCrossFade(rIn, right, patchCtrls_->ambienceVol, 1.4f);
+            float v = volParam.Next();
+
+            leftOut[i] = CheapEqualPowerCrossFade(lIn, left, v, 1.4f);
+            rightOut[i] = CheapEqualPowerCrossFade(rIn, right, v, 1.4f);
         }
 
         diffusers_[LEFT_CHANNEL]->UpdateDelayTimes();
