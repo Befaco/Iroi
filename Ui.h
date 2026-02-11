@@ -205,11 +205,11 @@ public:
             SwitchController::create(&patchCtrls_->mapTarget);
 
         cvs_[PARAM_CV_FILTER_CUTOFF] = CvController::create(
-            &patchCvs_->filterCutoff, kCvLpCoeff, kCvOffset, kCvMult);
+            &patchCvs_->filterCutoff, kCvLpCoeff, kCvOffset, kCvMult, 0.f);
         cvs_[PARAM_CV_FILTER_RESONANCE] =
             CvController::create(&patchCvs_->filterResonance);
         cvs_[PARAM_CV_RESONATOR_TUNE] = CvController::create(
-            &patchCvs_->resonatorTune, kCvLpCoeff, kCvOffset, kCvMult);
+            &patchCvs_->resonatorTune, kCvLpCoeff, kCvOffset, kCvMult, 0.f);
         cvs_[PARAM_CV_RESONATOR_FEEDBACK] =
             CvController::create(&patchCvs_->resonatorFeedback);
         cvs_[PARAM_CV_ECHO_DENSITY] =
@@ -575,8 +575,8 @@ public:
 
     void HandleLeds() {
         float level = patchState_->outputLevel.getMaxValue();
-        if (level < 0.6f) {
-            leds_[LED_INPUT]->Set(Map(level, 0.f, 0.6f, 0.45f, 1.f));
+        if (level < 0.65f) {
+            leds_[LED_INPUT]->Set(Map(level, 0.f, 0.65f, 0.45f, 1.f));
             leds_[LED_INPUT_PEAK]->Off();
         }
         else {
@@ -841,7 +841,7 @@ public:
 
         patchState_->modActive = patchCtrls_->modLevel > 0.1f;
 
-        float cutoffNote = 127 * patchCvs_->filterCutoff * patchCtrls_->filterCutoffCvAmount;
+        float cutoffNote = 127.f * patchCvs_->filterCutoff * patchCtrls_->filterCutoffCvAmount;
         float interval = cutoffNote - cutoffCv_;
         if (interval < -0.4f || interval > 0.4f) {
             cutoffCv_ = cutoffNote;
@@ -851,7 +851,7 @@ public:
         }
 
         cutoffNote = Modulate(cutoff_, patchCtrls_->filterCutoffModAmount, patchState_->modValue, 0, 0, -1.f, 1.f, patchState_->modAttenuverters);
-        cutoffNote = 12 + 127 * cutoffNote;
+        cutoffNote = 12.f + 127.f * cutoffNote;
         cutoffPot_ += 0.1f * (cutoffNote - cutoffPot_);
         patchCtrls_->filterCutoff = cutoffPot_ + cutoffCv_;
         

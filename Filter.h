@@ -234,7 +234,11 @@ private:
     {
         filterGain_ = kFilterLpGainMin;
 
-        float cutoff = Clamp(M2F(note), 18.f, 20000.f);
+        float cutoff = Clamp(M2F(note), 17.f, 20000.f);
+
+        // Shut the filter off when the frequency is really low.
+        cutoff = cutoff <= 20.f ? Map(cutoff, 17.f, 20.f, 0.f, cutoff) : cutoff;
+        if (cutoff < 7.f) cutoff = 0.f;
 
         switch (mode_)
         {
@@ -242,9 +246,6 @@ private:
             {
                 filters_[LEFT_CHANNEL]->setLowPass(cutoff, reso_);
                 filters_[RIGHT_CHANNEL]->setLowPass(cutoff, reso_);
-                // Shut the filter off when the frequency is really low.
-                float g = MapExpo(resoValue_, 0.f, 0.97f, kFilterLpGainMax, kFilterLpGainMin);
-                filterGain_ = cutoff <= 20.f ? Map(cutoff, 19.f, 20.f, 0.f, g) : g;
                 break;
             }
         case FilterMode::BP:
@@ -256,12 +257,11 @@ private:
             break;
         case FilterMode::HP:
             {
-                cutoff = Clamp(M2F(note), 18.f, 12000.f);
                 filters_[LEFT_CHANNEL]->setHighPass(cutoff, reso_);
                 filters_[RIGHT_CHANNEL]->setHighPass(cutoff, reso_);
                 // Shut the filter off when the frequency is really high.
                 float g = MapExpo(resoValue_, 0.f, 0.97f, kFilterHpGainMax, kFilterHpGainMin);
-                filterGain_ = cutoff >= 10000.f ? Map(cutoff, 10000, 12000, g, 0.f) : g;
+                filterGain_ = cutoff >= 17000.f ? Map(cutoff, 17000.f, 20000.f, g, 0.f) : g;
                 break;
             }
         case FilterMode::CF:
@@ -274,6 +274,8 @@ private:
             break;
         }
         noise_.SetFreq(cutoff);
+
+        filterGain_ = Clamp(filterGain_, 0.f, 1.f);
     }
 
     void SetReso(float value)
@@ -281,7 +283,7 @@ private:
         resoValue_ = Clamp(value);
         reso_ = MapExpo(value, 0.f, 0.85f, 0.1f, 30.f);
         drive_ = VariableCrossFade(0.f, 0.02f, value, 0.35f, 0.65f);
-        noiseLevel_ = VariableCrossFade(0.f, 1.f, value, 0.1f, 0.85f);
+        noiseLevel_ = VariableCrossFade(0.f, 0.7f, value, 0.15f, 0.85f);
     }
 
 public:
