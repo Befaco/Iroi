@@ -3,6 +3,7 @@
 #include "Commons.h"
 #include "TapTempo.h"
 #include "Schmitt.h"
+#include <algorithm>
 
 class Clock
 {
@@ -13,6 +14,7 @@ private:
     Schmitt trigger_;
 
     uint32_t samplesSinceSyncIn_;
+    uint32_t externalClockLimit_;
     ClockSource clockSource_;
     bool firstSyncIn_;
 
@@ -23,10 +25,11 @@ public:
         patchState_ = patchState;
 
         clockSource_ = ClockSource::CLOCK_SOURCE_EXTERNAL;
+        externalClockLimit_ = std::max((uint32_t) 1, (uint32_t) (2.f * patchState_->blockRate));
 
         patchState_->tempo = TapTempo::create(patchState_->blockRate, kInternalClockSamples);
         patchState_->tempo->setFrequency(kInternalClockFreq);
-        samplesSinceSyncIn_ = kExternalClockLimit;
+        samplesSinceSyncIn_ = externalClockLimit_;
     }
     ~Clock() {}
 
@@ -53,7 +56,7 @@ public:
             firstSyncIn_ = true;
         }
 
-        bool externalClock = samplesSinceSyncIn_ < kExternalClockLimit && firstSyncIn_;
+        bool externalClock = samplesSinceSyncIn_ < externalClockLimit_ && firstSyncIn_;
         if (externalClock)
         {
             // We received a sync, keep listening.

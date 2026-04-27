@@ -98,7 +98,7 @@ public:
         FloatArray left = buffer.getSamples(LEFT_CHANNEL);
         FloatArray right = buffer.getSamples(RIGHT_CHANNEL);
 
-        const int size = buffer.getSize();
+        const size_t size = buffer.getSize();
 
         for (size_t i = 0; i < size; i++)
         {
@@ -165,4 +165,3 @@ public:
         }
     }
 };
-

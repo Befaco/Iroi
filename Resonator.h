@@ -6,18 +6,20 @@
 #include "EnvFollower.h"
 #include "DcBlockingFilter.h"
 #include "Compressor.h"
+#include <algorithm>
 
 class Pole
 {
 public:
     Pole(float sampleRate)
+        : resoBufferSize_(std::max((int32_t) 1, (int32_t) (kResoBufferSeconds * sampleRate)))
     {
         sampleRate_ = sampleRate;
         msr_ = sampleRate_ / 1000.f;
 
         for (size_t i = 0; i < 2; i++)
         {
-            delays_[i] = DelayLine::create(kResoBufferSize);
+            delays_[i] = DelayLine::create(resoBufferSize_);
             lpfs_[i] = BiquadFilter::create(sampleRate_);
             dc_[i] = DcBlockingFilter::create();
             ef_[i] = EnvFollower::create();
@@ -131,6 +133,7 @@ public:
     }
 
 private:
+    const int32_t resoBufferSize_;
     DelayLine *delays_[2];
     BiquadFilter *lpfs_[2];
     EnvFollower *ef_[2];
@@ -158,8 +161,8 @@ private:
         lf_ = offset_ + detune_;
         rf_ = offset_ - detune_;
 
-        delayTimes_[LEFT_CHANNEL] = Clamp(msr_ * Db2A(lf_), 0, kResoBufferSize);
-        delayTimes_[RIGHT_CHANNEL] = Clamp(msr_ * Db2A(rf_), 0, kResoBufferSize);
+        delayTimes_[LEFT_CHANNEL] = Clamp(msr_ * Db2A(lf_), 0, resoBufferSize_);
+        delayTimes_[RIGHT_CHANNEL] = Clamp(msr_ * Db2A(rf_), 0, resoBufferSize_);
 
         SetFreq();
     }

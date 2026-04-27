@@ -3,6 +3,7 @@
 #include "TGate.h"
 #include "Commons.h"
 
+
 static const int BLINK_LIMIT = 75; // 50ms (1500 = 1s)
 
 enum LedName
@@ -55,13 +56,13 @@ private:
     }
 
 public:
-    Led(int id, LedType type)
+    Led(int id, float sampleRate, LedType type)
     {
         id_ = id;
         type_ = type;
         trig_ = false;
         doBlink_ = false;
-        trigger_.Init(48000);
+        trigger_.Init(sampleRate);
         samplesBetweenBlinks_ = 0;
         prevValue_ = 0;
         Off();
@@ -69,9 +70,9 @@ public:
 
     ~Led() {}
 
-    static Led* create(int id, LedType type = LedType::LED_TYPE_BUTTON)
+    static Led* create(int id, float sampleRate, LedType type = LedType::LED_TYPE_BUTTON)
     {
-        return new Led(id, type);
+        return new Led(id, sampleRate, type);
     }
 
     static void destroy(Led* obj)
@@ -154,7 +155,7 @@ public:
     {
         if (doBlink_)
         {
-            if (!trigger_.Process(trig_))
+            if (trigger_.Process(trig_) <= 0.f)
             {
                 Toggle();
                 doBlink_ = false;
@@ -187,5 +188,10 @@ public:
                 trig_ = true;
             }
         }
+    }
+
+    inline float Get()
+    {
+        return value_;
     }
 };

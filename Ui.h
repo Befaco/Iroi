@@ -22,7 +22,9 @@ struct Configuration {
     int revision;
 };
 
+#ifndef VCV
 extern PatchProcessor* getInitialisingPatchProcessor();
+#endif
 
 class Ui {
 private:
@@ -37,7 +39,9 @@ private:
     MapButtonController* mapButton_;
     RandomButtonController* randomButton_;
     ShiftButtonController* shiftButton_;
+public:
     Led* leds_[LED_LAST];
+private:
     MidiController* midiOuts_[PARAM_MIDI_LAST];
 
     CatchUpController* movingParam_;
@@ -47,8 +51,7 @@ private:
     Schmitt filterModeTrigger_, filterPositionTrigger_;
 
     int samplesSinceShiftPressed_, samplesSinceMapOrRandomPressed_,
-        samplesSinceMapButtonPressed_, samplesSinceRandomMapInReceived_,
-        samplesSinceRandomPressed_;
+        samplesSinceMapButtonPressed_, samplesSinceRandomPressed_;
 
     int hwRevision_;
 
@@ -143,7 +146,9 @@ public:
         patchCtrls_->ambienceDecayRndAmount = 0.5f;
         patchCtrls_->ambienceSpacetimeRndAmount = 0.5f;
 
+        #ifndef VCV
         LoadConfig();
+        #endif
 
         faders_[PARAM_FADER_FILTER_VOL] =
             FaderController::create(patchState_, &patchCtrls_->filterVol);
@@ -220,13 +225,13 @@ public:
         cvs_[PARAM_CV_AMBIENCE_DECAY] =
             CvController::create(&patchCvs_->ambienceDecay);
 
-        leds_[LED_INPUT] = Led::create(INPUT_LED_PARAM, LedType::LED_TYPE_PARAM);
-        leds_[LED_INPUT_PEAK] = Led::create(INPUT_PEAK_LED_PARAM);
-        leds_[LED_SYNC] = Led::create(SYNC_IN);
-        leds_[LED_MOD] = Led::create(MOD_LED_PARAM, LedType::LED_TYPE_PARAM);
-        leds_[LED_RANDOM] = Led::create(RANDOM_BUTTON);
-        leds_[LED_MAP] = Led::create(MAP_BUTTON);
-        leds_[LED_SHIFT] = Led::create(SHIFT_BUTTON);
+        leds_[LED_INPUT] = Led::create(INPUT_LED_PARAM, patchState_->sampleRate, LedType::LED_TYPE_PARAM);
+        leds_[LED_INPUT_PEAK] = Led::create(INPUT_PEAK_LED_PARAM, patchState_->sampleRate);
+        leds_[LED_SYNC] = Led::create(SYNC_IN, patchState_->sampleRate);
+        leds_[LED_MOD] = Led::create(MOD_LED_PARAM, patchState_->sampleRate, LedType::LED_TYPE_PARAM);
+        leds_[LED_RANDOM] = Led::create(RANDOM_BUTTON, patchState_->sampleRate);
+        leds_[LED_MAP] = Led::create(MAP_BUTTON, patchState_->sampleRate);
+        leds_[LED_SHIFT] = Led::create(SHIFT_BUTTON, patchState_->sampleRate);
 
         midiOuts_[PARAM_MIDI_FILTER_CUTOFF] = MidiController::create(
             &cutoff_, ParamMidi::PARAM_MIDI_FILTER_CUTOFF);
@@ -287,8 +292,8 @@ public:
             MidiController::create(&patchCvs_->ambienceSpacetime,
                 ParamMidi::PARAM_MIDI_AMBIENCE_SPACETIME_CV, 0, 0.5f, 0.6666667f);
 
-        mapButton_ = MapButtonController::create(leds_[LED_MAP]);
-        randomButton_ = RandomButtonController::create(leds_[LED_RANDOM]);
+        mapButton_ = MapButtonController::create(leds_[LED_MAP], patchState_->sampleRate);
+        randomButton_ = RandomButtonController::create(leds_[LED_RANDOM], patchState_->sampleRate);
         shiftButton_ = ShiftButtonController::create(leds_[LED_SHIFT]);
     }
     ~Ui() {
@@ -325,6 +330,24 @@ public:
 
     static void destroy(Ui* obj) {
         delete obj;
+    }
+
+    // VCV bridge: inject the main filter cutoff knob value (0..1)
+    // when KnobController::Read() is disabled under VCV.
+    inline void SetFilterCutoffMain(float value) {
+        cutoff_ = Clamp(value, 0.f, 1.f);
+    }
+
+    inline bool IsMapOn() const {
+        return mapButton_ && mapButton_->IsOn();
+    }
+
+    inline bool IsMapPressed() const {
+        return mapButton_ && mapButton_->IsPressed();
+    }
+
+    inline bool IsShiftOn() const {
+        return shiftButton_ && shiftButton_->IsOn();
     }
 
     void LoadConfig() {
@@ -497,6 +520,7 @@ public:
             break;
         }
 
+        #ifndef VCV
         // Start the save process.
         getInitialisingPatchProcessor()->patch->sendMidi(MidiMessage(USB_COMMAND_SINGLE_BYTE, START, 0, 0)); // send MIDI START
 
@@ -511,8 +535,9 @@ public:
             getInitialisingPatchProcessor()->patch->sendMidi(MidiMessage::pb(i, value));
         }
 
-        // Finish the process.
+        // Finish the process.        
         getInitialisingPatchProcessor()->patch->sendMidi(MidiMessage(USB_COMMAND_SINGLE_BYTE, STOP, 0, 0)); // send MIDI STOP
+        #endif
     }
 
     // Callback
@@ -548,9 +573,6 @@ public:
             shiftButton_->Trig(on);
             break;
 
-        case IN_DETEC:
-            break;
-
         default:
             break;
         }
@@ -574,9 +596,14 @@ public:
     }
 
     void HandleLeds() {
-        float level = patchState_->outputLevel.getMaxValue();
+        float level = patchState_->outputLevel.getMean();
         if (level < 0.65f) {
-            leds_[LED_INPUT]->Set(Map(level, 0.f, 0.65f, 0.45f, 1.f));
+            if (level <= 1e-4f) {
+                leds_[LED_INPUT]->Off();
+            }
+            else {
+                leds_[LED_INPUT]->Set(Map(level, 0.f, 0.65f, 0.f, 1.f));
+            }
             leds_[LED_INPUT_PEAK]->Off();
         }
         else {
@@ -606,7 +633,6 @@ public:
 
     void HandleCatchUp() {
         bool moving = false;
-        bool wasCatchingUp = false;
 
         for (size_t i = 0; i < PARAM_KNOB_LAST + PARAM_FADER_LAST; i++) {
             CatchUpController* ctrl = (i < PARAM_KNOB_LAST)
@@ -791,16 +817,19 @@ public:
     // Called at block rate
     void Poll() {
         if (startup_) {
+            #ifndef VCV
             //LoadMainParams();
-            LoadAltParams();
-            LoadModParams();
-            LoadCvParams();
-            LoadRndParams();
-
+            //LoadAltParams();
+            //LoadModParams();
+            //LoadCvParams();
+            //LoadRndParams();
+            #endif
             startup_ = false;
 
             return;
         }
+
+        #ifndef VCV
 
         for (size_t i = 0; i < PARAM_KNOB_LAST; i++) {
             knobs_[i]->Read(ParamKnob(i));
@@ -817,17 +846,23 @@ public:
         for (size_t i = 0; i < PARAM_CV_LAST; i++) {
             cvs_[i]->Read(ParamCv(i));
         }
+        #endif            
         
         for (size_t i = 0; i < LED_LAST; i++) {
             leds_[i]->Read();
         }
-        
+
+        #ifndef VCV
         for (size_t i = 0; i < PARAM_MIDI_LAST; i++) {
             midiOuts_[i]->Process();
         }
+        #endif
 
         HandleLeds();
+        #ifndef VCV
+        // Catch-up/soft-takeover handling is disabled because Rack virtual controls + hidden alt knobs do not need it.
         HandleCatchUp();
+        #endif
         HandleLedButtons();
 
         // Value: 0 = CV, 0.33 = RND, 1.00 = MOD

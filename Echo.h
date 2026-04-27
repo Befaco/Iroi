@@ -8,6 +8,7 @@
 #include "DjFilter.h"
 #include "Compressor.h"
 #include <stdint.h>
+#include <algorithm>
 
 enum EchoTap
 {
@@ -43,6 +44,9 @@ private:
     bool infinite_;
 
     int clockSamples_;
+    const int32_t kEchoMinLengthSamples;
+    const int32_t kEchoMaxLengthSamples;
+    const int32_t kEchoFadeSamples;
 
     void SetTapTime(int idx, float time)
     {
@@ -137,6 +141,9 @@ private:
 
 public:
     Echo(PatchCtrls* patchCtrls, PatchCvs* patchCvs, PatchState* patchState)
+        : kEchoMinLengthSamples(std::max((int32_t) 1, (int32_t) (kEchoMinLength * patchState->sampleRate))),
+          kEchoMaxLengthSamples(std::max((int32_t) 1, (int32_t) (kEchoMaxLength * patchState->sampleRate))),
+          kEchoFadeSamples(std::max((int32_t) 1, (int32_t) (kEchoFade * patchState->sampleRate)))
     {
         patchCtrls_ = patchCtrls;
         patchCvs_ = patchCvs;
@@ -217,7 +224,7 @@ public:
 
         ParameterInterpolator volParam = ParameterInterpolator(&dryWet_, patchCtrls_->echoVol, size);
 
-        for (int i = 0; i < size; i++)
+        for (size_t i = 0; i < size; i++)
         {
             // Using crossfade between two different tap times when the clock is
             // external and a filtered density param for when the clock is

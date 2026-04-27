@@ -17,6 +17,8 @@ private:
     float xAtt_, yAtt_, zAtt_, max_, min_;
 
 public:
+    using OscillatorTemplate<LorenzAttractor>::generate;
+
     static constexpr float begin_phase = 0;
     static constexpr float end_phase = 1;
 
@@ -128,7 +130,7 @@ public:
         return s_;
     }
 
-    void setFrequency(float freq)
+    void setFrequency(float freq) override
     {
         freq = Map(freq, 0.01f, 80.f, 0.01f, 9.5f);
         t_ = 1.f / (sampleRate_ / Clamp(freq, 0.01f, 9.5f));
@@ -157,7 +159,7 @@ public:
         return s_;
     }
 
-    void generate(FloatArray xOut, FloatArray yOut)
+    void generate(FloatArray xOut, FloatArray yOut) override
     {
         for (size_t i = 0; i < xOut.getSize(); i++)
         {

@@ -150,7 +150,7 @@ public:
     {
         // Scale up notes starting from C2.
         note = Map(note, 14, 127, 36, 127);
-        float d = Clamp(M2D(note), 4.f, 734.f);
+        float d = Clamp(M2D(note, sampleRate_), 4.f, 734.f);
 
         //poles_[0]->SetDelay(d);
         poles_[1]->SetDelay(d);
@@ -199,7 +199,6 @@ private:
     float filterGain_;
     float dryWet_;
     float noiseLevel_;
-    float feedback_;
 
     void SetMode(float value)
     {

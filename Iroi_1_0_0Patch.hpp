@@ -4,14 +4,12 @@
 #include "Commons.h"
 #include "Ui.h"
 #include "Clock.h"
-#include "InputDetector.h"
 
 class Iroi_1_0_0Patch : public Patch {
 private:
     Ui* ui_;
     Iroi* iroi_;
     Clock* clock_;
-    InputDetector* inDetec_;
 
     PatchCtrls patchCtrls;
     PatchCvs patchCvs;
@@ -26,15 +24,15 @@ public:
         ui_ = Ui::create(&patchCtrls, &patchCvs, &patchState);
         iroi_ = Iroi::create(&patchCtrls, &patchCvs, &patchState);
         clock_ = Clock::create(&patchCtrls, &patchState);
-        inDetec_ = InputDetector::create(&patchCtrls, &patchState);
     }
     ~Iroi_1_0_0Patch()
     {
         Iroi::destroy(iroi_);
         Ui::destroy(ui_);
         Clock::destroy(clock_);
-        InputDetector::destroy(inDetec_);
     }
+
+
 
     void buttonChanged(PatchButtonId bid, uint16_t value, uint16_t samples) override
     {
@@ -50,9 +48,34 @@ public:
     {
         ui_->Poll();
         clock_->Process();
-        //inDetec_->Process(buffer);
         iroi_->Process(buffer);
     }
+
+
+    void updateSampleRateBlockSize(float newSampleRate, int blockSize) 
+    {
+        patchState.sampleRate = newSampleRate;        
+        patchState.blockSize = blockSize;
+        patchState.blockRate = newSampleRate / blockSize;
+
+        // destroy and recreate Oneiroi, clock and UI
+        Iroi::destroy(iroi_);
+        iroi_ = Iroi::create(&patchCtrls, &patchCvs, &patchState);
+
+        Clock::destroy(clock_);
+        clock_ = Clock::create(&patchCtrls, &patchState);
+
+        // causing hard to debug memory issues, ui not strongly affected by sample rates so leave for now
+        // Ui::destroy(ui_);
+        // ui_ = Ui::create(&patchCtrls, &patchCvs, &patchState);
+    }
+
+    PatchCtrls* getPatchCtrls() { return &patchCtrls; }
+    PatchCvs* getPatchCvs() { return &patchCvs; }
+    PatchState* getPatchState() { return &patchState; }
+    Iroi* getIroi() { return iroi_; }
+    Ui* getUi() { return ui_; }
+
 };
 
 #endif // __Iroi_1_0_0Patch_hpp__

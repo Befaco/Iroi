@@ -2,7 +2,9 @@
 
 #include "Commons.h"
 
+#ifndef VCV
 extern PatchProcessor* getInitialisingPatchProcessor();
+#endif
 
 enum ParamMidi {
     PARAM_MIDI_FILTER_CUTOFF,
@@ -94,7 +96,9 @@ public:
         if (abs(value_ - value) > delta_)
         {
             value_ = value;
+            #ifndef VCV
             getInitialisingPatchProcessor()->patch->sendMidi(MidiMessage::cc(channel_, cc_, value_));
+            #endif
         }
     }
 };

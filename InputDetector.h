@@ -4,7 +4,9 @@
 #include "SquareWaveOscillator.h"
 #include <array>
 
+#ifndef VCV
 extern PatchProcessor* getInitialisingPatchProcessor();
+#endif
 
 class InputDetector
 {

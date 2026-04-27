@@ -7,6 +7,7 @@
 #include "EnvFollower.h"
 #include "DcBlockingFilter.h"
 #include "Compressor.h"
+#include <algorithm>
 
 class Damp
 {
@@ -98,7 +99,8 @@ public:
 class Diffuse
 {
 public:
-    Diffuse()
+    Diffuse(int32_t kAmbienceBufferSize_, float sampleRate_)
+        : kAmbienceBufferSize(kAmbienceBufferSize_), sampleRate(sampleRate_)
     {
         for (int i = 0; i < kAmbienceNofDiffusers; i++)
         {
@@ -120,9 +122,9 @@ public:
         }
     }
 
-    static Diffuse* create()
+    static Diffuse* create(int32_t kAmbienceBufferSize, float sampleRate)
     {
-        return new Diffuse();
+        return new Diffuse(kAmbienceBufferSize, sampleRate);
     }
 
     static void destroy(Diffuse* diffuse)
@@ -135,10 +137,10 @@ public:
         size_ = size;
         for (size_t i = 0; i < kAmbienceNofDiffusers - 1; i++)
         {
-            newDelayTimes_[i] = M2D(size + 2.f * (i + 1));
+            newDelayTimes_[i] = M2D(size + 2.f * (i + 1), sampleRate);
         }
 
-        newDelayTimes_[kAmbienceNofDiffusers - 1] = M2D(size - 7.f);
+        newDelayTimes_[kAmbienceNofDiffusers - 1] = M2D(size - 7.f, sampleRate);
         SetRT(time_);
         needsUpdate_ = true;
     }
@@ -146,7 +148,11 @@ public:
     void SetRT(float time)
     {
         time_ = time;
-        rt_ = Db2A((delayTimes_[kAmbienceNofDiffusers - 1] / M2D(time)) * -60.f);
+        rt_ = Db2A((delayTimes_[kAmbienceNofDiffusers - 1] / M2D(time, sampleRate)) * -60.f);
+        if (rt_ >= kOne)
+        {
+            rt_ = 1.f;
+        }
     }
 
     void SetDf(float _df)
@@ -198,6 +204,8 @@ private:
     float delayTimes_[kAmbienceNofDiffusers], newDelayTimes_[kAmbienceNofDiffusers];
     float size_, time_, rt_, df_, fbOut_, outs_[kAmbienceNofDiffusers];
     bool needsUpdate_;
+    const int32_t kAmbienceBufferSize;
+    const float sampleRate;
 }; // End Diffuse
 
 class ReversedBuffer
@@ -309,6 +317,7 @@ private:
     float amp_, pan_, decay_, spaceTime_, dryWet_;
     float reverse_;
     float xi_;
+    const int32_t kAmbienceBufferSize;
 
     Lut<float, 32> decayLUT{0.f, -200.f, Lut<float, 32>::Type::LUT_TYPE_EXPO};
 
@@ -419,6 +428,7 @@ private:
 
 public:
     Ambience(PatchCtrls* patchCtrls, PatchCvs* patchCvs, PatchState* patchState)
+        : kAmbienceBufferSize(std::max((int32_t) 1, (int32_t) (kAmbienceLengthSeconds * patchState->sampleRate)))
     {
         patchCtrls_ = patchCtrls;
         patchCvs_ = patchCvs;
@@ -427,7 +437,7 @@ public:
         for (size_t i = 0; i < 2; i++)
         {
             dampFilters_[i] = Damp::create(patchState_->sampleRate);
-            diffusers_[i] = Diffuse::create();
+            diffusers_[i] = Diffuse::create(kAmbienceBufferSize, patchState_->sampleRate);
             reversers_[i] = ReversedBuffer::create(kAmbienceBufferSize);
             ef_[i] = EnvFollower::create();
             dc_[i] = DcBlockingFilter::create();

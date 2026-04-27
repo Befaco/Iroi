@@ -33,7 +33,6 @@
 #define SYNC_IN              BUTTON_4
 #define INPUT_PEAK_LED_PARAM BUTTON_5
 #define SHIFT_BUTTON         BUTTON_6
-#define IN_DETEC             BUTTON_7
 
 #define MAP_SELECTOR    PARAMETER_AE
 #define INPUT_LED_PARAM PARAMETER_AF
@@ -99,17 +98,17 @@ constexpr float kFilterCombGainMax = 0.3f;
 constexpr float kResoGainMin = 0.5f;
 constexpr float kResoGainMax = 1.2f;
 constexpr float kResoMakeupGain = 1.f;
-constexpr int32_t kResoBufferSize = 2400;
+constexpr float kResoBufferSeconds = 2400.f / 48000.f; // 50ms @ 48kHz
 constexpr float kResoInfiniteFeedbackThreshold = 0.99f;
 constexpr float kResoInfiniteFeedbackLevel = 1.05f;
 
-constexpr int32_t kEchoFadeSamples = 2400; // 50 ms @ audio rate
-constexpr int32_t kEchoMinLengthSamples = 480; // 10 ms @ audio rate
-constexpr int32_t kEchoMaxLengthSamples = 288000; // 6 seconds @ audio rate
+constexpr float kEchoFade = 2400.f / 48000.f; // 50ms @ 48kHz
+constexpr float kEchoMinLength = 480.f / 48000.f; // 10ms @ 48kHz
+constexpr float kEchoMaxLength = 6.f; // 6 seconds
 constexpr int kEchoTaps = 4;
 const float kEchoTapsRatios[kEchoTaps] = { 0.75f, 0.375f, 0.5f, 0.875f };  // TAP_LEFT_A, TAP_LEFT_B, TAP_RIGHT_A, TAP_RIGHT_B. Smaller = earlier
 const float kEchoTapsFeedbacks[kEchoTaps] = { 0.345f, 0.645f, 0.545f, 0.445f };
-const int32_t kEchoMaxExternalClockSamples = kEchoMaxLengthSamples / kModClockRatios[kClockNofRatios - 1]; // Maximum period for the external clock
+const float kEchoMaxExternalClock = kEchoMaxLength / kModClockRatios[kClockNofRatios - 1]; // Maximum period for the external clock
 constexpr int kEchoExternalClockMultiplier = 375;
 constexpr float kEchoInfiniteFeedbackThreshold = 0.985f;
 constexpr float kEchoInfiniteFeedbackLevel = 1.2f;
@@ -117,7 +116,7 @@ constexpr float kEchoCompThresMin = -16.f;
 constexpr float kEchoCompThresMax = -24.f;
 constexpr float kEchoMakeupGain = 1.8f;
 
-constexpr int32_t kAmbienceBufferSize = 48000;
+constexpr float kAmbienceLengthSeconds = 1.f;
 constexpr int kAmbienceNofDiffusers = 6;
 constexpr float kAmbienceLowDampMin = -0.5f;
 constexpr float kAmbienceLowDampMax = -40.f;

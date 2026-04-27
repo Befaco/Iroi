@@ -6,7 +6,9 @@
 #include "Led.h"
 #include "TGate.h"
 
+#ifndef VCV
 extern PatchProcessor* getInitialisingPatchProcessor();
+#endif
 
 enum ParamKnob {
     PARAM_KNOB_FILTER_CUTOFF,
@@ -347,7 +349,6 @@ public:
             // control and the value of the parameter match again.
             case PARAM_STATE_CATCHING_UP:
                 {
-                    float d = ctrlValue_ - storedValue_;
                     if (moving)
                     {
                         // Just catch up if the control is moving.
@@ -379,6 +380,9 @@ class CatchUpController
 protected:
     ParamCatchUp catchUp_;
 
+public:
+    virtual ~CatchUpController() {}
+
     float lpCoeff_;
     float readValue_;
     float ctrlValue_;
@@ -393,16 +397,15 @@ protected:
 
 public:
     CatchUpController(){}
-    ~CatchUpController(){}
 
     inline bool IsMoving()
     {
         return moving_;
     }
 
-    virtual ParamCatchUp GetCatchUpState();
-    virtual bool Process();
-    virtual void Reset(FuncMode funcMode);
+    virtual ParamCatchUp GetCatchUpState() { return catchUp_; }
+    virtual bool Process() { return false; }
+    virtual void Reset(FuncMode funcMode) {}
 };
 
 class KnobController : public CatchUpController
@@ -568,6 +571,7 @@ public:
 
     inline void Read(ParamKnob ctrl)
     {
+        #ifndef VCV
         readValue_ = getInitialisingPatchProcessor()->patch->getParameterValue(paramKnobMap[ctrl]);
 
         if (lpCoeff_ > 0 && !first_)
@@ -578,6 +582,7 @@ public:
         {
             ctrlValue_ = readValue_;
         }
+        #endif
     }
 
     inline bool Process()
@@ -717,6 +722,7 @@ public:
 
     inline void Read(ParamFader fader)
     {
+        #ifndef VCV
         readValue_ = getInitialisingPatchProcessor()->patch->getParameterValue(paramFaderMap[fader]) * scale_;
 
         if (lpCoeff_ > 0 && !first_)
@@ -727,6 +733,7 @@ public:
         {
             ctrlValue_ = readValue_;
         }
+        #endif 
     }
 
     inline bool Process()
@@ -873,6 +880,7 @@ public:
 
     inline void Read(ParamSwitch swtch)
     {
+        #ifndef VCV
         float v = getInitialisingPatchProcessor()->patch->getParameterValue(paramSwitchMap[swtch]);
         if (v != switchValue_)
         {
@@ -882,6 +890,7 @@ public:
                 *mainParam_ = switchValue_;
             }
         }
+        #endif
     }
 };
 
@@ -933,6 +942,7 @@ public:
     // Called at block rate
     inline void Read(ParamCv cv)
     {
+        #ifndef VCV
         // -5V = 0
         //  0V = 0.3
         // 10V = 0.98
@@ -955,6 +965,7 @@ public:
         {
             *cvParam_ = cvValue_;
         }
+        #endif
     }
 };
 
@@ -967,7 +978,6 @@ private:
 
     bool on_;
 
-    bool latched_;
     bool hold_;
     bool pressed_;
     bool trig_;
@@ -977,7 +987,7 @@ private:
     int samplesSincePressed_;
     int samplesSinceHeld_;
 public:
-    MapButtonController(Led* led)
+    MapButtonController(Led* led, float sampleRate)
     {
         led_ = led;
 
@@ -989,16 +999,16 @@ public:
         trig_ = false;
         doBlink_ = false;
 
-        trigger_.Init(48000);
+        trigger_.Init(sampleRate);
 
         samplesSincePressed_ = 0;
         samplesSinceHeld_ = 0;
     }
     ~MapButtonController() {}
 
-    static MapButtonController* create(Led* led)
+    static MapButtonController* create(Led* led, float sampleRate)
     {
-        return new MapButtonController(led);
+        return new MapButtonController(led, sampleRate);
     }
 
     static void destroy(MapButtonController* obj)
@@ -1082,7 +1092,7 @@ public:
 
         if (doBlink_)
         {
-            if (!trigger_.Process(trig_))
+            if (trigger_.Process(trig_) <= 0.f)
             {
                 Toggle();
                 doBlink_ = false;
@@ -1150,7 +1160,7 @@ private:
     int samplesSinceHeld_;
 
 public:
-    RandomButtonController(Led* led)
+    RandomButtonController(Led* led, float sampleRate)
     {
         led_ = led;
 
@@ -1166,16 +1176,16 @@ public:
         doBlink_ = false;
         gate_ = false;
 
-        trigger_.Init(48000);
+        trigger_.Init(sampleRate);
 
         samplesSincePressed_ = 0;
         samplesSinceHeld_ = 0;
     }
     ~RandomButtonController() {}
 
-    static RandomButtonController* create(Led* led)
+    static RandomButtonController* create(Led* led, float sampleRate)
     {
-        return new RandomButtonController(led);
+        return new RandomButtonController(led, sampleRate);
     }
 
     static void destroy(RandomButtonController* obj)
@@ -1244,7 +1254,7 @@ public:
         pressed_ = pressed;
 
         // Act only when the led button is pressed.
-        if (FuncMode::FUNC_MODE_NONE == funcMode_ && !pressed_ || FuncMode::FUNC_MODE_NONE != funcMode_ && pressed_)
+        if ((FuncMode::FUNC_MODE_NONE == funcMode_ && !pressed_) || (FuncMode::FUNC_MODE_NONE != funcMode_ && pressed_))
         {
             Set(!*on_);
             trig_ = true;
@@ -1259,7 +1269,7 @@ public:
     {
         if (doBlink_)
         {
-            if (!trigger_.Process(trig_))
+            if (trigger_.Process(trig_) <= 0.f)
             {
                 Set(!*on_);
                 doBlink_ = false;
@@ -1323,7 +1333,6 @@ private:
     Led* led_;
 
     bool on_;
-    bool latched_;
     bool hold_;
     bool pressed_;
     bool trig_;
