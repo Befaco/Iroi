@@ -23,6 +23,8 @@ public:
             lpfs_[i] = BiquadFilter::create(sampleRate_);
             dc_[i] = DcBlockingFilter::create();
             ef_[i] = EnvFollower::create();
+            delayTimes_[i] = 0.f;
+            outs_[i] = 0.f;
         }
 
         reso_ = FilterStage::BUTTERWORTH_Q;
@@ -309,7 +311,10 @@ public:
         compressor_->setAttack(20.f);
 
         amp_ = 1.f;
+        dryWet_ = 0.f;
         range_ = 1.f;
+        tune_ = 0.f;
+        oldTuning_ = 0.f;
         task_ = 0;
 
         SetDissonance(0);

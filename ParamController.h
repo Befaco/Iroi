@@ -998,6 +998,7 @@ public:
         pressed_ = false;
         trig_ = false;
         doBlink_ = false;
+        gate_ = false;
 
         trigger_.Init(sampleRate);
 
@@ -1350,6 +1351,7 @@ public:
         hold_ = false;
         pressed_ = false;
         trig_ = false;
+        gate_ = false;
 
         samplesSincePressed_ = 0;
         samplesSinceHeld_ = 0;

@@ -60,11 +60,14 @@ public:
     {
         id_ = id;
         type_ = type;
+        blinks_ = 0;
+        value_ = 0.f;
         trig_ = false;
         doBlink_ = false;
+        fast_ = false;
         trigger_.Init(sampleRate);
         samplesBetweenBlinks_ = 0;
-        prevValue_ = 0;
+        prevValue_ = 0.f;
         Off();
     }
 
@@ -84,7 +87,9 @@ public:
     {
         value_ = value;
 
+#ifndef VCV
         SetLed(value_);
+#endif
     }
 
     inline void On()

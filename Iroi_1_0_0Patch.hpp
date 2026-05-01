@@ -11,9 +11,9 @@ private:
     Iroi* iroi_;
     Clock* clock_;
 
-    PatchCtrls patchCtrls;
-    PatchCvs patchCvs;
-    PatchState patchState;
+    PatchCtrls patchCtrls{};
+    PatchCvs patchCvs{};
+    PatchState patchState{};
 
 public:
     Iroi_1_0_0Patch()

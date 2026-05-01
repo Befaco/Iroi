@@ -25,10 +25,15 @@ public:
         patchState_ = patchState;
 
         clockSource_ = ClockSource::CLOCK_SOURCE_EXTERNAL;
+        firstSyncIn_ = false;
         externalClockLimit_ = std::max((uint32_t) 1, (uint32_t) (2.f * patchState_->blockRate));
 
         patchState_->tempo = TapTempo::create(patchState_->blockRate, kInternalClockSamples);
         patchState_->tempo->setFrequency(kInternalClockFreq);
+        patchState_->clockSource = ClockSource::CLOCK_SOURCE_INTERNAL;
+        patchState_->clockReset = false;
+        patchState_->clockTick = false;
+        patchState_->clockSamples = patchState_->tempo->getPeriodInSamples();
         samplesSinceSyncIn_ = externalClockLimit_;
     }
     ~Clock() {}

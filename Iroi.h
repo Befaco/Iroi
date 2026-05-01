@@ -61,6 +61,8 @@ public:
         inputDcFilter_ = StereoDcBlockingFilter::create();
         outputDcFilter_ = StereoDcBlockingFilter::create();
 
+        filterPosition_ = FilterPosition::POSITION_1;
+        lastFilterPosition_ = FilterPosition::POSITION_1;
         bypass_ = false;
     }
     ~Iroi()

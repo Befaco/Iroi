@@ -304,9 +304,14 @@ public:
         }
 
         mode_ = lastMode_ = FilterMode::LP;
+        drive_ = 0.f;
         cutoff_ = 60.f;
+        reso_ = 0.f;
+        resoValue_ = 0.f;
         amp_ = Db2A(120);
         filterGain_ = 0.f;
+        dryWet_ = 0.f;
+        noiseLevel_ = 0.f;
     }
     ~Filter()
     {

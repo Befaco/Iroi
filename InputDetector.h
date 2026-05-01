@@ -21,7 +21,7 @@ private:
         0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0
     }; 
 
-    std::array<bool, 5> read;
+    std::array<bool, 5> read{};
 
     int p = 0;
 

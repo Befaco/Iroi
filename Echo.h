@@ -159,7 +159,12 @@ public:
         }
 
         echoDensity_ = 1.f;
+        oldDensity_ = 1.f;
         clockRatiosIndex_ = 0;
+        repeats_ = 0.f;
+        filterValue_ = 0.f;
+        dryWet_ = 0.f;
+        clockSamples_ = 0;
 
         xi_ = 1.f / patchState_->blockSize;
 

@@ -105,13 +105,20 @@ public:
         for (int i = 0; i < kAmbienceNofDiffusers; i++)
         {
             diffuse_[i] = DelayLine::create(kAmbienceBufferSize);
+            delayTimes_[i] = 1.f;
+            newDelayTimes_[i] = 1.f;
+            outs_[i] = 0.f;
         }
 
-        fbOut_ = 0;
-        df_ = 0;
+        size_ = 0.f;
+        time_ = 0.f;
+        rt_ = 0.f;
+        fbOut_ = 0.f;
+        df_ = 0.f;
         needsUpdate_ = false;
 
         SetSZ(1);
+        UpdateDelayTimes();
         SetRT(0);
     }
     ~Diffuse()
@@ -214,11 +221,13 @@ public:
     ReversedBuffer(int32_t s) : s_{s}
     {
         line_ = FloatArray::create(s);
+        d_ = 0;
         i_ = 0; // Input pointer
         o_ = s_ - 1; // Output pointer
         bs_ = s_ >> 1; // Reverse max block size is half the buffer size
         b_ = bs_; // Block pointer
         rb_ = 1.f / b_;
+        out_ = 0.f;
     }
     ~ReversedBuffer()
     {
@@ -458,6 +467,10 @@ public:
 
         amp_ = 1.f;
         pan_ = 0.5f;
+        decay_ = 0.f;
+        spaceTime_ = 0.f;
+        dryWet_ = 0.f;
+        reverse_ = 0.f;
         xi_ = 1.f / patchState_->blockSize;
     }
     ~Ambience()
