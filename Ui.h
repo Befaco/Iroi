@@ -206,19 +206,19 @@ public:
 
         cvs_[PARAM_CV_FILTER_CUTOFF] = CvController::create(
             &patchCvs_->filterCutoff, kCvLpCoeff, kCvOffset, kCvMult, 0.f);
-        cvs_[PARAM_CV_FILTER_RESONANCE] =
-            CvController::create(&patchCvs_->filterResonance);
+        cvs_[PARAM_CV_FILTER_RESONANCE] = CvController::create(&patchCvs_->filterResonance);
         cvs_[PARAM_CV_RESONATOR_TUNE] = CvController::create(
-            &patchCvs_->resonatorTune, kCvLpCoeff, kCvOffset, kCvMult, 0.f);
-        cvs_[PARAM_CV_RESONATOR_FEEDBACK] =
-            CvController::create(&patchCvs_->resonatorFeedback);
-        cvs_[PARAM_CV_ECHO_DENSITY] =
-            CvController::create(&patchCvs_->echoDensity, 0.995f);
-        cvs_[PARAM_CV_ECHO_REPEATS] = CvController::create(&patchCvs_->echoRepeats);
-        cvs_[PARAM_CV_AMBIENCE_SPACETIME] =
-            CvController::create(&patchCvs_->ambienceSpacetime, 0.995f);
-        cvs_[PARAM_CV_AMBIENCE_DECAY] =
-            CvController::create(&patchCvs_->ambienceDecay);
+            &patchCvs_->resonatorTune, 0.3f, kCvOffset, kCvMult, 0.00025f);
+        cvs_[PARAM_CV_RESONATOR_FEEDBACK] = CvController::create(
+            &patchCvs_->resonatorFeedback, 0.3f, kCvOffset, kCvMult, 0.00025f);
+        cvs_[PARAM_CV_ECHO_DENSITY] = CvController::create(
+            &patchCvs_->echoDensity, 0.3f, kCvOffset, kCvMult, 0.00025f);
+        cvs_[PARAM_CV_ECHO_REPEATS] = CvController::create(
+            &patchCvs_->echoRepeats, 0.3f, kCvOffset, kCvMult, 0.00025f);
+        cvs_[PARAM_CV_AMBIENCE_SPACETIME] = CvController::create(
+            &patchCvs_->ambienceSpacetime, 0.3f, kCvOffset, kCvMult, 0.00025f);
+        cvs_[PARAM_CV_AMBIENCE_DECAY] = CvController::create(
+            &patchCvs_->ambienceDecay, 0.3f, kCvOffset, kCvMult, 0.00025f);
 
         leds_[LED_INPUT] = Led::create(INPUT_LED_PARAM, LedType::LED_TYPE_PARAM);
         leds_[LED_INPUT_PEAK] = Led::create(INPUT_PEAK_LED_PARAM);
