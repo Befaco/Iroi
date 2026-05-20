@@ -1,12 +1,12 @@
-#ifndef __Iroi_1_0_0Patch_hpp__
-#define __Iroi_1_0_0Patch_hpp__
+#ifndef __Iroi_1_0_1Patch_hpp__
+#define __Iroi_1_0_1Patch_hpp__
 
 #include "Commons.h"
 #include "Ui.h"
 #include "Clock.h"
 #include "InputDetector.h"
 
-class Iroi_1_0_0Patch : public Patch {
+class Iroi_1_0_1Patch : public Patch {
 private:
     Ui* ui_;
     Iroi* iroi_;
@@ -18,7 +18,7 @@ private:
     PatchState patchState;
 
 public:
-    Iroi_1_0_0Patch()
+    Iroi_1_0_1Patch()
     {
         patchState.sampleRate = getSampleRate();
         patchState.blockRate = getBlockRate();
@@ -28,7 +28,7 @@ public:
         clock_ = Clock::create(&patchCtrls, &patchState);
         inDetec_ = InputDetector::create(&patchCtrls, &patchState);
     }
-    ~Iroi_1_0_0Patch()
+    ~Iroi_1_0_1Patch()
     {
         Iroi::destroy(iroi_);
         Ui::destroy(ui_);
@@ -55,4 +55,4 @@ public:
     }
 };
 
-#endif // __Iroi_1_0_0Patch_hpp__
+#endif // __Iroi_1_0_1Patch_hpp__
