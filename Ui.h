@@ -208,7 +208,7 @@ public:
             &patchCvs_->filterCutoff, kCvLpCoeff, kCvOffset, kCvMult, 0.f);
         cvs_[PARAM_CV_FILTER_RESONANCE] = CvController::create(&patchCvs_->filterResonance);
         cvs_[PARAM_CV_RESONATOR_TUNE] = CvController::create(
-            &patchCvs_->resonatorTune, 0.2f, kCvOffset, kCvMult, 0.00025f);
+            &patchCvs_->resonatorTune, 0.2f, kCvOffset, kCvMult, 0.0025f);
         cvs_[PARAM_CV_RESONATOR_FEEDBACK] = CvController::create(
             &patchCvs_->resonatorFeedback, 0.2f, kCvOffset, kCvMult, 0.00025f);
         cvs_[PARAM_CV_ECHO_DENSITY] = CvController::create(
