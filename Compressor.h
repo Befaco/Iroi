@@ -10,15 +10,15 @@ class Compressor
 {
 private:
     float sampleRate_;
-    float threshold_;
-    float ratio_, expo_;
-    float attack_;
-    float release_;
+    float threshold_ = 1000.f;
+    float ratio_ = 1.f, expo_ = 0.f;
+    float attack_ = 0.f;
+    float release_ = 0.f;
 
     // Internal variables
-    float thrlin_, thrlinr_;
-    float cteAT_;
-    float cteRL_;
+    float thrlin_ = 1.f, thrlinr_ = 1.f;
+    float cteAT_ = 0.f;
+    float cteRL_ = 0.f;
 
     // State variables
     float leftS1_ = 0.f, rightS1_ = 0.f;
