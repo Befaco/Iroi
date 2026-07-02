@@ -199,6 +199,8 @@ private:
     float filterGain_;
     float dryWet_;
     float noiseLevel_;
+    float maxCutoff_;
+    float highpassFadeStart_;
 
     void SetMode(float value)
     {
@@ -233,7 +235,7 @@ private:
     {
         filterGain_ = kFilterLpGainMin;
 
-        float cutoff = Clamp(M2F(note), 17.f, 20000.f);
+        float cutoff = Clamp(M2F(note), 17.f, maxCutoff_);
 
         // Shut the filter off when the frequency is really low.
         cutoff = cutoff <= 20.f ? Map(cutoff, 17.f, 20.f, 0.f, cutoff) : cutoff;
@@ -260,7 +262,7 @@ private:
                 filters_[RIGHT_CHANNEL]->setHighPass(cutoff, reso_);
                 // Shut the filter off when the frequency is really high.
                 float g = MapExpo(resoValue_, 0.f, 0.97f, kFilterHpGainMax, kFilterHpGainMin);
-                filterGain_ = cutoff >= 17000.f ? Map(cutoff, 17000.f, 20000.f, g, 0.f) : g;
+                filterGain_ = cutoff >= highpassFadeStart_ ? Map(cutoff, highpassFadeStart_, maxCutoff_, g, 0.f) : g;
                 break;
             }
         case FilterMode::CF:
@@ -294,6 +296,8 @@ public:
 
         noise_.Init(patchState_->sampleRate);
         noise_.SetChaos(kFilterChaosNoise);
+        maxCutoff_ = fminf(20000.f, patchState_->sampleRate * 0.45f);
+        highpassFadeStart_ = maxCutoff_ * 0.85f;
 
         for (size_t i = 0; i < 2; i++)
         {
