@@ -1,3 +1,3 @@
 # Iroi
 
-Iroi is Iroi's effects section in a module.
+Iroi is Oneiroi's effects section in a module.
