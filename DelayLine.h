@@ -45,7 +45,9 @@ public:
 
     inline float readAt(int index)
     {
-        int i = writeIndex_ - index - 1;
+        // Interpolation can read one sample beyond the maximum delay.
+        const int bufferSize = static_cast<int>(size_);
+        int i = (static_cast<int>(writeIndex_) - index - 1) % bufferSize;
         if (i < 0)
         {
             i += size_;
