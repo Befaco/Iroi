@@ -15,6 +15,7 @@ private:
     float sampleRate_;
     float x_, y_, z_, a_, b_, c_, t_, s_;
     float xAtt_, yAtt_, zAtt_, max_, min_;
+    static constexpr int oversampling = 4;
 
 public:
     using OscillatorTemplate<LorenzAttractor>::generate;
@@ -35,6 +36,13 @@ public:
         setFrequency(1.f);
     }
     ~LorenzAttractor() {}
+
+    void initialise()
+    {
+        x_ = y_ = z_ = 1.f;
+        s_ = 0.f;
+        max_ = min_ = 0.f;
+    }
 
     static LorenzAttractor* create(float sr)
     {
@@ -133,7 +141,7 @@ public:
     void setFrequency(float freq) override
     {
         freq = Map(freq, 0.01f, 80.f, 0.01f, 9.5f);
-        t_ = 1.f / (sampleRate_ / Clamp(freq, 0.01f, 9.5f));
+        t_ = 1.f / (sampleRate_ / Clamp(freq, 0.01f, 9.5f)) / oversampling;
     }
 
     void process()
@@ -149,7 +157,9 @@ public:
 
     float generate() override
     {
-        process();
+        for (int i = 0; i < oversampling; i++) {
+            process();
+        }
 
         max_ = Max(max_, x_);
         min_ = Min(min_, x_);
@@ -163,7 +173,9 @@ public:
     {
         for (size_t i = 0; i < xOut.getSize(); i++)
         {
-            process();
+            for (int j = 0; j < oversampling; j++) {
+                process();
+            }
 
             xOut[i] = Map(x_, -20.f, 50.f, -xAtt_, xAtt_);
             yOut[i] = Map(y_, -20.f, 50.f, -yAtt_, yAtt_);

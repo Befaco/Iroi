@@ -198,6 +198,28 @@ public:
         }
 
         float l = MapExpo(patchCtrls_->modLevel);
-        patchState_->modValue = l > 0.02f ? lfo_->generate() * l : 0;
+        if (l > 0.02f)
+        {
+            float modValue = lfo_->generate();
+            if (!std::isfinite(modValue))
+            {
+                auto* lorenz = static_cast<LorenzAttractor*>(lfo_->getOscillator(LORENZ));
+                lorenz->initialise();
+                lfo_->reset();
+                modValue = lfo_->generate();
+                if (!std::isfinite(modValue))
+                {
+                    lorenz->initialise();
+                    modValue = 0.f;
+                }
+            }
+
+            float scaledModValue = modValue * l;
+            patchState_->modValue = std::isfinite(scaledModValue) ? scaledModValue : 0.f;
+        }
+        else
+        {
+            patchState_->modValue = 0.f;
+        }
     }
 };
